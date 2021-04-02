@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Example</title>
+  <style>
+    body {
+      height: 3000px;
+    }
+    .dot {
+      width: 2px;
+      height: 2px;
+      background-color: black;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+<script>
+(function() {
+    var ip = location.host;
+    var mousePos;
+    var pre_mousePos;
+	var mouse_down=0;
+    document.onmousemove = handleMouseMove;
+    setInterval(getMousePosition, 250); // setInterval repeats every X ms
+	function reqListener () {
+	  console.log(this.responseText);
+	}
+	function mouse_click(val) {
+		var oReq = new XMLHttpRequest();
+		var url= "http://"+`${ip}`+"/cgi-bin/mousectl.cgi?"+"cmd=0,0,"+`${val}`+"&"+"ts="+`${Date.now()}`
+		console.log(`${url}`)
+		oReq.addEventListener("load", reqListener);
+		oReq.open("GET", `${url}`);
+		oReq.send();
+	}
+	document.onclick = function(){
+		console.log("onclick");
+		//mouse_click (1);
+		//setTimeout(function(){mouse_click (0);},50);
+	}
+	document.onmousedown = function(){
+		console.log("onmousedown");
+		mouse_down=1;
+		mouse_click (1);
+	}
+	document.onmouseup = function(){
+		console.log("onmouseup");
+		setTimeout(function(){mouse_click (0);},50);
+		mouse_down=0;
+	}
+    function handleMouseMove(event) {
+        var dot, eventDoc, doc, body, pageX, pageY;
+        event = event || window.event; // IE-ism
+        // If pageX/Y aren't available and clientX/Y are,
+        // calculate pageX/Y - logic taken from jQuery.
+        // (This is to support old IE)
+        if (event.pageX == null && event.clientX != null) {
+            eventDoc = (event.target && event.target.ownerDocument) || document;
+            doc = eventDoc.documentElement;
+            body = eventDoc.body;
+            event.pageX = event.clientX +
+              (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+              (doc && doc.clientLeft || body && body.clientLeft || 0);
+            event.pageY = event.clientY +
+              (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+              (doc && doc.clientTop  || body && body.clientTop  || 0 );
+        }
+        mousePos = {
+            x: event.pageX,
+            y: event.pageY
+        };
+    }
+    function getMousePosition() {
+		if(!pre_mousePos){
+			pre_mousePos=mousePos
+		}
+        var pos = mousePos;
+		var pre_pos = pre_mousePos;
+        if (!pos) {
+            // We haven't seen any movement yet
+        }
+        else {
+            // Use pos.x and pos.y
+			// Add a dot to follow the cursor
+			dot = document.createElement('div');
+			dot.className = "dot";
+			dot.style.left = pos.x + "px";
+			dot.style.top = pos.y + "px";
+			document.body.appendChild(dot);
+			console.log(`${pos.x},${pos.y},${pre_pos.x},${pre_pos.y},${pos.x-pre_pos.x},${pos.y-pre_pos.y}`)
+			var dx=(pos.x-pre_pos.x)*3
+			var dy=(pos.y-pre_pos.y)*3
+			var timestamp=Date.now()
+			if(dx&&dy){
+				var oReq = new XMLHttpRequest();
+				var url= "http://"+`${ip}`+"/cgi-bin/mousectl.cgi?"+"cmd="+`${pos.x-pre_pos.x},${pos.y-pre_pos.y},${mouse_down}`+"&"+"ts="+`${Date.now()}`
+				console.log(`${url}`)
+				oReq.addEventListener("load", reqListener);
+				oReq.open("GET", `${url}`);
+				oReq.send();
+				oReq.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+						var regexStatus = /(\w+ state:.*?)</g
+						var response = oReq.responseText;
+						var statuses = response.match(regexStatus);
+						//console.log('Inside function getStatus'+statuses);
+						return statuses;
+					};
+				}
+			}
+        }
+		pre_mousePos=mousePos
+    }
+})();
+</script>
+</body>
+</html>
