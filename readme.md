@@ -3,7 +3,9 @@
 ## setup
 
 insmod virmouse.ko
+
 ./busybox httpd -h ./www -p 80 -c /tmp/vmouse/httpd.conf -vf
+
 open url: http://${ip}/mousepad.html
 
 ## ref
