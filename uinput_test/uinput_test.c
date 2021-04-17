@@ -5,6 +5,7 @@
 #include <string.h>
 #include <linux/uinput.h>
 #include <linux/input.h>
+#include <ctype.h>
 
 static struct uinput_user_dev uinput_dev;
 static int uinput_fd;
@@ -148,6 +149,36 @@ const unsigned char ascii_to_scan_code_table[]= {
 
 };
 
+
+
+//https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
+//gen_part_table 0~9,A~Z,a~z
+int gen_part_table(void)
+{
+	unsigned char ch;
+	for(ch=0;ch<=127;ch++){
+		if (iscntrl(ch)) {
+			printf("/* ASCII:   %3d[C] */ 0,\n", ch);
+		}else{
+			if (isprint(ch)){
+				if(ch>=48&&ch<=57){
+					printf("/* ASCII:   %3d(%c) */ KEY_%c,\n", ch,ch,ch);
+				}else if(ch>=65&&ch<=90){
+					printf("/* ASCII:   %3d(%c) */ KEY_%c|WITH_SHIFT,\n", ch,ch,ch);
+				}else if(ch>=97&&ch<=122){
+					printf("/* ASCII:   %3d(%c) */ KEY_%c,\n", ch,ch,toupper(ch));
+				}else{
+				
+					printf("/* ASCII:   %3d(%c) */ 0,\n", ch,ch);
+				}
+			} else{
+				printf("/* ASCII:   %3d[N] */ 0,\n", ch);
+			}
+		}
+	}
+    return (0);
+}
+
 //-b KEY_BACKSPACE
 //-e KEY_ENTER
 //-s $input string
@@ -156,12 +187,13 @@ int main(int argc, char *argv[])
 {
 	
 	int opt;
-	int bflag,eflag,sflag;
+	int bflag,eflag,sflag,gflag;
 	int count=0;
     bflag = 0;
     eflag = 0;
 	sflag = 0;
-    while ((opt = getopt(argc, argv, "esb:")) != -1) {
+	gflag = 0;
+    while ((opt = getopt(argc, argv, "gesb:")) != -1) {
         switch (opt) {
             case 'b':
                 bflag = 1;
@@ -170,6 +202,9 @@ int main(int argc, char *argv[])
 			case 'e':
                 eflag = 1;
                 break;
+			case 'g':
+                gflag = 1;
+                break;				
 			case 's':
                 sflag = 1;
                 break;				
@@ -180,7 +215,12 @@ int main(int argc, char *argv[])
         }
     }
 	
-	printf("bflag=%d; ebflag=%d; optind=%d\n", bflag, eflag, optind);
+	if(gflag){
+		gen_part_table();
+		return 0;
+	}
+	
+	//printf("bflag=%d; ebflag=%d; optind=%d\n", bflag, eflag, optind);
 
     if (optind >= argc) {
         //fprintf(stderr, "Expected argument after options\n");
