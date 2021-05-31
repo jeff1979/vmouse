@@ -1,0 +1,66 @@
+<input type='text' name='data' value='hello' id='data' />
+<button id="databtn">Send</button>
+<input type='text' name='backcnt' value='1' id='backcnt' />
+<button id="backcntbtn">Backspace</button>
+<button id="enterbtn">Enter</button>
+<div id="result"></div>
+
+<script>
+databtn.onclick = function(){
+    const dataElement = document.getElementById("data");
+    var ip = location.host;
+    var xhr;
+    var url= "http://"+`${ip}`+"/cgi-bin/uinputl.cgi?"+"type=1&data="+`${dataElement.value}`+"&"+"ts="+`${Date.now()}`
+    if(window.XMLHttpRequest){
+        xhr = new XMLHttpRequest();
+    }else{
+        xhr = new ActiveXObject('Microsoft.XMLHTTP');
+    }
+		console.log(`${url}`)
+		xhr.open("GET", `${url}`);
+		xhr.send();
+    if(xhr.readyState == 4){
+        if(xhr.status == 200){
+            result.innerHTML += xhr.responseText;
+        }
+    }
+}
+backcntbtn.onclick = function(){
+    const dataElement = document.getElementById("backcnt");
+    var ip = location.host;
+    var xhr;
+    var url= "http://"+`${ip}`+"/cgi-bin/uinputl.cgi?"+"type=2&data="+`${dataElement.value}`+"&"+"ts="+`${Date.now()}`
+    if(window.XMLHttpRequest){
+        xhr = new XMLHttpRequest();
+    }else{
+        xhr = new ActiveXObject('Microsoft.XMLHTTP');
+    }
+		console.log(`${url}`)
+		xhr.open("GET", `${url}`);
+		xhr.send();
+    if(xhr.readyState == 4){
+        if(xhr.status == 200){
+            result.innerHTML += xhr.responseText;
+        }
+    }
+}
+enterbtn.onclick = function(){
+    var ip = location.host;
+    var xhr;
+    var url= "http://"+`${ip}`+"/cgi-bin/uinputl.cgi?"+"type=3&data="+"&"+"ts="+`${Date.now()}`
+    if(window.XMLHttpRequest){
+        xhr = new XMLHttpRequest();
+    }else{
+        xhr = new ActiveXObject('Microsoft.XMLHTTP');
+    }
+		console.log(`${url}`)
+		xhr.open("GET", `${url}`);
+		xhr.send();
+    if(xhr.readyState == 4){
+        if(xhr.status == 200){
+            result.innerHTML += xhr.responseText;
+        }
+    }
+}
+
+</script>    
